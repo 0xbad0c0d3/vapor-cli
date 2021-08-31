@@ -121,6 +121,22 @@ class Manifest
     }
 
     /**
+     * Determine if the environment uses a Docker image.
+     *
+     * @param  string  $environment
+     * @return string|null
+     */
+    public static function isUsingKaniko($environment)
+    {
+        return !empty(static::getKanikoConfig($environment));
+    }
+
+    public static function getKanikoConfig($environment)
+    {
+        return (static::current()['environments'][$environment]['kaniko'] ?? []);
+    }
+
+    /**
      * Determine if we should interpret dot files in the public directory as assets.
      *
      * @return bool

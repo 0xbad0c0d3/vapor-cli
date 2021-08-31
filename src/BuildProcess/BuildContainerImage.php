@@ -21,6 +21,12 @@ class BuildContainerImage
             return;
         }
 
+        if (Manifest::isUsingKaniko($this->environment)) {
+            Helpers::step('<options=bold>Building Container Image: kaniko builder - will be done later</>');
+
+            return;
+        }
+
         Helpers::step('<options=bold>Building Container Image</>');
 
         Docker::build($this->appPath, Manifest::name(), $this->environment);
