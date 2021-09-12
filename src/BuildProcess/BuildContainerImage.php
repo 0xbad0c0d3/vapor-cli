@@ -2,6 +2,7 @@
 
 namespace Laravel\VaporCli\BuildProcess;
 
+use Laravel\VaporCli\CustomContainerBuilder;
 use Laravel\VaporCli\Docker;
 use Laravel\VaporCli\Helpers;
 use Laravel\VaporCli\Manifest;
@@ -21,8 +22,8 @@ class BuildContainerImage
             return;
         }
 
-        if (Manifest::isUsingKaniko($this->environment)) {
-            Helpers::step('<options=bold>Building Container Image: kaniko builder - will be done later</>');
+        if ($customBuilder = Manifest::getCustomRuntimeBuilder($this->environment)) {
+            CustomContainerBuilder::build($this->appPath, Manifest::name(), $this->environment, $customBuilder);
 
             return;
         }

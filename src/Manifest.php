@@ -109,6 +109,25 @@ class Manifest
         return static::current()['environments'][$environment]['runtime'] ?? null;
     }
 
+    public static function getCustomRuntimeBuilder(string $environment): ?string
+    {
+        if (! static::usesContainerImage($environment)) {
+            return null;
+        }
+
+        return static::current()['environments'][$environment]['custom-runtime-builder'] ?? null;
+    }
+
+    public static function isKeepBuildDir(string $environment): bool
+    {
+        return static::current()['environments'][$environment]['keep-build-dir'] ?? false;
+    }
+
+    public static function isDeleteBuildDir(string $environment): bool
+    {
+        return ! static::isKeepBuildDir($environment);
+    }
+
     /**
      * Determine if the environment uses a Docker image.
      *
@@ -118,22 +137,6 @@ class Manifest
     public static function usesContainerImage($environment)
     {
         return (static::current()['environments'][$environment]['runtime'] ?? null) == 'docker';
-    }
-
-    /**
-     * Determine if the environment uses a Docker image.
-     *
-     * @param  string  $environment
-     * @return string|null
-     */
-    public static function isUsingKaniko($environment)
-    {
-        return !empty(static::getKanikoConfig($environment));
-    }
-
-    public static function getKanikoConfig($environment)
-    {
-        return (static::current()['environments'][$environment]['kaniko'] ?? []);
     }
 
     /**

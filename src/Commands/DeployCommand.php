@@ -6,10 +6,10 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\VaporCli\Aws\AwsStorageProvider;
+use Laravel\VaporCli\CustomContainerBuilder;
 use Laravel\VaporCli\Docker;
 use Laravel\VaporCli\Git;
 use Laravel\VaporCli\Helpers;
-use Laravel\VaporCli\Kaniko;
 use Laravel\VaporCli\Manifest;
 use Laravel\VaporCli\Path;
 use Laravel\VaporCli\ServeAssets;
@@ -34,7 +34,6 @@ class DeployCommand extends Command
             ->addOption('message', null, InputOption::VALUE_OPTIONAL, 'The message for the commit that is being deployed')
             ->addOption('without-waiting', null, InputOption::VALUE_NONE, 'Deploy without waiting for progress')
             ->addOption('fresh-assets', null, InputOption::VALUE_NONE, 'Upload a fresh copy of all assets')
-            ->addOption('keep-build-dir', null, InputOption::VALUE_NONE, 'Do not delete '.Path::vapor().' directory')
             ->setDescription('Deploy an environment');
     }
 
@@ -56,7 +55,7 @@ class DeployCommand extends Command
             $this->vapor->project(Manifest::id())
         ));
 
-        if (!$this->option('keep-build-dir')) {
+        if (Manifest::isDeleteBuildDir($this->argument('environment'))) {
             (new Filesystem())->deleteDirectory(Path::vapor());
         }
 
@@ -185,14 +184,15 @@ class DeployCommand extends Command
 
             Helpers::step('<comment>Pushing Container Image</comment>');
 
-            if (Manifest::isUsingKaniko($environment)) {
-                Kaniko::publish(
+            if ($builder = Manifest::getCustomRuntimeBuilder($environment)) {
+                CustomContainerBuilder::publish(
                     Path::app(),
                     Manifest::name(),
                     $environment,
                     $artifact['container_registry_token'],
                     $artifact['container_repository'],
-                    $artifact['container_image_tag']
+                    $artifact['container_image_tag'],
+                    $builder
                 );
 
                 return $artifact;
