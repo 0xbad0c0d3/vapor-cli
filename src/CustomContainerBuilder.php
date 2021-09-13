@@ -60,6 +60,8 @@ class CustomContainerBuilder
                 $repoUri.':'.$tag
             ),
             $path
-        )->setTimeout(null)->mustRun();
+        )->setTimeout(null)->mustRun(function ($type, $line) {
+            Helpers::write($line);
+        });
     }
 }
